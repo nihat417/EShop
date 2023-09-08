@@ -1,68 +1,45 @@
-﻿using EShop.Application.Paginations;
-using EShop.Application.Repositories;
-using EShop.Application.Repositories.ProductRepository;
-using EShop.Application.ViewModels;
-using EShop.Domain.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using EShop.Application.Features.Commands.Products.AddProduct;
+using EShop.Application.Features.Commands.Products.DeleteProduct;
+using EShop.Application.Features.Queries.Products.GetAllProducts;
+using EShop.Persistence.Repositories;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace EShop.API.Controllers
 {
-    [Route("api/[controller]")]
+	[Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
-		private readonly IUnitOfWork _unitOfWork;
+		private readonly IMediator mediatR;
 
-		public ProductsController(IUnitOfWork unitOfWork)
+		public ProductsController(IMediator  mediatR)
 		{
-			_unitOfWork = unitOfWork;
+			this.mediatR = mediatR;
 		}
 
         [HttpGet("getall")]
-        public IActionResult GetAll([FromQuery] Pagination pagination)
+        public async Task<IActionResult> GetAll([FromQuery] GetProductsQueryRequest queryRequest)
         {
-            try
-            {
-                var products = _unitOfWork.ProductReadRepository.GetAll(tracking: false);
-                var totalCount = products.Count();
-
-                products = products.OrderBy(p => p.CreatedTime).Skip(pagination.Size * pagination.Page).Take(pagination.Size).ToList();
-
-                return Ok(new { products, totalCount });
-            }
-            catch (Exception)
-            {
-                // logging
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
-        }
+			try
+			{
+				var response = await mediatR.Send(queryRequest);
+				return Ok(response);
+			}
+			catch (Exception) { return StatusCode((int)HttpStatusCode.InternalServerError); }
+		}
 
         [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] AddProductViewModel model)
+        public async Task<IActionResult> Add([FromBody] AddProductCommandRequest commandRequest)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    Product product = new()
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = model.Name,
-                        Description = model.Desc,
-                        Price = model.Price,
-                        Stock = model.Stock,
-                        CreatedTime = DateTime.Now,
-                    };
-
-                    var result = await _unitOfWork.ProductWriteRepository.AddAsync(product);
-                    if (result)
-                    {
-                        await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
-                        return StatusCode((int)HttpStatusCode.Created);
-                    }
-                }
+                    var response = await mediatR.Send(commandRequest);
+					return Ok(response);
+				}
                 return BadRequest(ModelState);
             }
             catch (Exception)
@@ -72,23 +49,13 @@ namespace EShop.API.Controllers
             }
         }
 
-        [HttpPost("remove")]
-        public async Task<IActionResult> Remove(Guid id)
+        [HttpPost("removeProduct")]
+        public async Task<IActionResult> Remove([FromQuery]DeleteProductRequest request)
         {
             try
             {
-                var product = await _unitOfWork.ProductReadRepository.GetAsync(id.ToString());
-                if(product != null)
-                {
-                    var result = _unitOfWork.ProductWriteRepository.Remove(product);
-                    if(result)
-                    {
-                        await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
-                        return Ok();
-                    }
-
-				}
-                return NotFound();
+                var response = mediatR.Send(request);
+                return Ok(response);
 			}
             catch (Exception ex)
             {
@@ -96,35 +63,35 @@ namespace EShop.API.Controllers
             }
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> Update(Guid id, AddProductViewModel vm)
-        {
-            try
-            {
-                if(ModelState.IsValid)
-                {
-					var product = await _unitOfWork.ProductReadRepository.GetAsync(id.ToString());
-					if (product != null)
-					{
-
-						product.Name = vm.Name;
-						product.Description = vm.Desc;
-						product.Price = vm.Price;
-						product.Stock = vm.Stock;
-
-						var result = _unitOfWork.ProductWriteRepository.Update(product);
-						if (result)
-						{
-							await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
-							return Ok();
-						}
-					}
-					return NotFound();
-				}
-                return BadRequest(ModelState);
-			}
-            catch (Exception ex) { return BadRequest(ex); }
-        }
+        //[HttpPost("update")]
+        //public async Task<IActionResult> Update(Guid id, AddProductViewModel vm)
+        //{
+        //    try
+        //    {
+        //        if(ModelState.IsValid)
+        //        {
+		//			var product = await _unitOfWork.ProductReadRepository.GetAsync(id.ToString());
+		//			if (product != null)
+		//			{
+        //
+		//				product.Name = vm.Name;
+		//				product.Description = vm.Desc;
+		//				product.Price = vm.Price;
+		//				product.Stock = vm.Stock;
+        //
+		//				var result = _unitOfWork.ProductWriteRepository.Update(product);
+		//				if (result)
+		//				{
+		//					await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
+		//					return Ok();
+		//				}
+		//			}
+		//			return NotFound();
+		//		}
+        //        return BadRequest(ModelState);
+		//	}
+        //    catch (Exception ex) { return BadRequest(ex); }
+        //}
         
     }
 }

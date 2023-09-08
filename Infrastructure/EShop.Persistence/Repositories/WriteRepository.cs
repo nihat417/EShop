@@ -2,15 +2,10 @@
 using EShop.Domain.Entities.Common;
 using EShop.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EShop.Persistence.Repositories
 {
-    public class WriteRepository<T> : IWriteRepository<T> where T : BaseEnitity
+	public class WriteRepository<T> : IWriteRepository<T> where T : BaseEnitity
     {
         private readonly EShopDbContext context;
 
