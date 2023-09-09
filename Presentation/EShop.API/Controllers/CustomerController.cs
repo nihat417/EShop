@@ -1,4 +1,6 @@
 ﻿using EShop.Application.Features.Commands.Customers.AddCustomer;
+using EShop.Application.Features.Commands.Customers.DeleteCustomer;
+using EShop.Application.Features.Commands.Customers.UpdateCustomer;
 using EShop.Application.Features.Queries.Customers.GetAllCustomers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +17,7 @@ namespace EShop.API.Controllers
 			this.mediator = mediator;
 		}
 
-		[HttpGet("getallcust")]
+		[HttpGet("GetAllCustomers")]
 		public IActionResult GetAll([FromQuery] GetCustomersQueryRequest request) 
 		{
 			try
@@ -26,7 +28,7 @@ namespace EShop.API.Controllers
 			catch (Exception) { return new NotFoundResult(); }
 		}
 
-		[HttpPost("addcust")]
+		[HttpPost("AddCustomers")]
 		public async Task<IActionResult> Add([FromBody] AddCustomersCommandRequest request)
 		{
 			try
@@ -39,6 +41,36 @@ namespace EShop.API.Controllers
 				return BadRequest();
 			}
 			catch (Exception) {return new NotFoundResult();}
+		}
+
+		[HttpDelete("DeleteCustomer")]
+		public async Task<IActionResult> Remove([FromQuery] DeleteCustomerRequest Request)
+		{
+			try
+			{
+				if(ModelState.IsValid)
+				{
+					var response = await mediator.Send(Request);
+					return Ok(response);
+				}
+				return BadRequest();
+			}
+			catch (Exception) { return new NotFoundResult(); };
+		}
+
+		[HttpPut("UpdateCustomer")]
+		public async Task<IActionResult> Update([FromBody] UpdateCustomerRequest request)
+		{
+			try
+			{
+				if(ModelState.IsValid)
+				{
+					var response = await mediator.Send(request);
+					return Ok(response);
+				}
+				return BadRequest();
+			}
+			catch (Exception) { return new NotFoundResult();}
 		}
 	}
 }

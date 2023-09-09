@@ -9,7 +9,6 @@ namespace EShop.Persistence.Repositories
 	public class UnitOfWork : IUnitOfWork
 	{
 		private readonly EShopDbContext _context;
-
 		public IProductReadRepository ProductReadRepository { get; }
 		public IProductWriteRepository ProductWriteRepository { get; }
 		public IOrderReadRepository OrderReadRepository { get; }
@@ -35,14 +34,14 @@ namespace EShop.Persistence.Repositories
 			OrderWriteRepository = orderWriteRepository;
 		}
 
-		public async Task<int> SaveChangesAsync()
-		{
-			return await _context.SaveChangesAsync();
-		}
+		//public async Task<int> SaveChangesAsync()
+		//{
+		//	return await _context.SaveChangesAsync();
+		//}
 
-		public void Dispose()
-		{
-			_context.Dispose();
-		}
+		//public void Dispose()
+		//{
+		//	_context.Dispose();
+		//}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using EShop.Application.Features.Commands.Products.AddProduct;
 using EShop.Application.Features.Commands.Products.DeleteProduct;
+using EShop.Application.Features.Commands.Products.UpdateProduct;
 using EShop.Application.Features.Queries.Products.GetAllProducts;
 using EShop.Persistence.Repositories;
 using MediatR;
@@ -19,7 +20,7 @@ namespace EShop.API.Controllers
 			this.mediatR = mediatR;
 		}
 
-        [HttpGet("getall")]
+        [HttpGet("GetallProducts")]
         public async Task<IActionResult> GetAll([FromQuery] GetProductsQueryRequest queryRequest)
         {
 			try
@@ -30,7 +31,7 @@ namespace EShop.API.Controllers
 			catch (Exception) { return StatusCode((int)HttpStatusCode.InternalServerError); }
 		}
 
-        [HttpPost("add")]
+        [HttpPost("AddProduct")]
         public async Task<IActionResult> Add([FromBody] AddProductCommandRequest commandRequest)
         {
             try
@@ -49,12 +50,12 @@ namespace EShop.API.Controllers
             }
         }
 
-        [HttpPost("removeProduct")]
+        [HttpDelete("RemoveProduct")]
         public async Task<IActionResult> Remove([FromQuery]DeleteProductRequest request)
         {
             try
             {
-                var response = mediatR.Send(request);
+                var response = await mediatR.Send(request);
                 return Ok(response);
 			}
             catch (Exception ex)
@@ -63,35 +64,20 @@ namespace EShop.API.Controllers
             }
         }
 
-        //[HttpPost("update")]
-        //public async Task<IActionResult> Update(Guid id, AddProductViewModel vm)
-        //{
-        //    try
-        //    {
-        //        if(ModelState.IsValid)
-        //        {
-		//			var product = await _unitOfWork.ProductReadRepository.GetAsync(id.ToString());
-		//			if (product != null)
-		//			{
-        //
-		//				product.Name = vm.Name;
-		//				product.Description = vm.Desc;
-		//				product.Price = vm.Price;
-		//				product.Stock = vm.Stock;
-        //
-		//				var result = _unitOfWork.ProductWriteRepository.Update(product);
-		//				if (result)
-		//				{
-		//					await _unitOfWork.ProductWriteRepository.SaveChangesAsync();
-		//					return Ok();
-		//				}
-		//			}
-		//			return NotFound();
-		//		}
-        //        return BadRequest(ModelState);
-		//	}
-        //    catch (Exception ex) { return BadRequest(ex); }
-        //}
+        [HttpPut("UpdateProduct")]
+        public async Task<IActionResult> Update([FromBody]UpdateProductRequest updateProductRequest)
+        {
+            try
+            {
+                if(ModelState.IsValid)
+                {
+					var response = await mediatR.Send(updateProductRequest);
+					return(Ok(response));
+				}
+                return BadRequest(ModelState);
+			}
+            catch (Exception ex) { return BadRequest(ex); }
+        }
         
     }
 }

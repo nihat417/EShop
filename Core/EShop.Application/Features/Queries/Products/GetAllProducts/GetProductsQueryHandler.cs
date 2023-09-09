@@ -23,6 +23,7 @@ namespace EShop.Application.Features.Queries.Products.GetAllProducts
 						.Take(request.Size)
 						.Select(p => new
 						{
+							p!.Id,
 							p.Name,
 							p.Price,
 							p.Description,
